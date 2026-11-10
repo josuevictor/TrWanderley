@@ -8,6 +8,30 @@ Não alterar outros projetos em `/home/josue`. Tudo abaixo roda **apenas** dentr
 - Acesso git ao repositório (HTTPS ou deploy key)
 - Porta livre em localhost (padrão **18080** — configurável via `TRW_WEB_PORT`)
 
+## Portas e outros projetos (importante)
+
+- **Não** usar `8000` nem `5432` no host — outros apps costumam usar essas portas.
+- TrW publica **somente** `127.0.0.1:TRW_WEB_PORT` (padrão **18080**). Postgres fica **só na rede Docker** do projeto `trw`.
+- Containers e volumes têm prefixo **`trw-`** (`COMPOSE_PROJECT_NAME=trw`).
+- Antes do deploy, no servidor:
+
+```bash
+cd /home/josue/trw
+chmod +x scripts/check-trw-port.sh
+./scripts/check-trw-port.sh
+```
+
+Se a porta estiver ocupada, escolha outra na faixa **18080–18119** em `TRW_WEB_PORT` e use a **mesma** no nginx/caddy.
+
+Ver o que já escuta (somente leitura, não altera nada):
+
+```bash
+ss -tlnp | head -30
+docker ps --format 'table {{.Names}}\t{{.Ports}}'
+```
+
+Subir **apenas** a partir de `/home/josue/trw` — nunca `docker compose` na pasta de outro projeto.
+
 ## 1. Primeira vez (diretório vazio)
 
 ```bash
@@ -18,6 +42,7 @@ nano .env   # SECRET_KEY, senhas, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS, TRW_WEB_P
 chmod +x scripts/deploy-trw-server.sh
 ./scripts/deploy-trw-server.sh
 docker compose -f docker-compose.prod.yml exec web python manage.py createsuperuser
+# ou: docker compose -p trw -f docker-compose.prod.yml exec web ...
 ```
 
 Gerar `SECRET_KEY` (no laptop ou no servidor):

@@ -21,6 +21,21 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
+# shellcheck disable=SC1091
+set -a && source .env && set +a
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-trw}"
+
+TRW_BIND="${TRW_BIND:-127.0.0.1}"
+TRW_WEB_PORT="${TRW_WEB_PORT:-18080}"
+
+if [[ "$TRW_BIND" != "127.0.0.1" && "$TRW_BIND" != "localhost" ]]; then
+  echo "Aviso: TRW_BIND=$TRW_BIND expõe o app na rede; use 127.0.0.1 atrás do nginx." >&2
+fi
+
+if [[ -x "$TRW_DIR/scripts/check-trw-port.sh" ]]; then
+  TRW_DIR="$TRW_DIR" "$TRW_DIR/scripts/check-trw-port.sh"
+fi
+
 if [[ ! -d .git ]]; then
   git clone --branch "$BRANCH" "$REPO_URL" .
 else
@@ -32,5 +47,6 @@ fi
 docker compose $COMPOSE_FILE up -d --build
 
 echo ""
-echo "App em http://127.0.0.1:${TRW_WEB_PORT:-18080} (veja TRW_WEB_PORT no .env)."
-echo "Próximo: proxy reverso (nginx/caddy) para o domínio público → essa porta."
+echo "Projeto Docker: $COMPOSE_PROJECT_NAME (containers trw-*)"
+echo "App em http://${TRW_BIND}:${TRW_WEB_PORT}/"
+echo "Próximo: proxy reverso (nginx/caddy) → http://127.0.0.1:${TRW_WEB_PORT}"

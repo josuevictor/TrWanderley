@@ -1,5 +1,8 @@
 # Produção isolada em /home/josue/trw — use SOMENTE este arquivo no servidor:
 #   docker compose -f docker-compose.prod.yml up -d --build
+# Containers/volumes: prefixo "trw-" (não colide com outros compose no host).
+
+name: trw
 
 services:
   db:
