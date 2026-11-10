@@ -1,0 +1,13 @@
+{% for p in payment_methods %}
+<tr class="border-b border-slate-100 dark:border-slate-800">
+  <td class="px-4 py-3">{{ p.name }}</td>
+  <td class="px-4 py-3">{% if p.is_active %}Sim{% else %}Não{% endif %}</td>
+  <td class="px-4 py-3 text-sm whitespace-nowrap">
+    <a href="{% url 'finance:payment_method_detail' p.pk %}" class="text-sky-600 hover:underline dark:text-sky-400">Ver</a>
+    <span class="text-slate-300 dark:text-slate-600">·</span>
+    <a href="{% url 'finance:payment_method_edit' p.pk %}" class="text-sky-600 hover:underline dark:text-sky-400">Editar</a>
+  </td>
+</tr>
+{% empty %}
+<tr><td colspan="3" class="px-4 py-8 text-center text-slate-500">Nenhum registo.</td></tr>
+{% endfor %}

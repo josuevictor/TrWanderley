@@ -1,0 +1,29 @@
+{% extends "base_app.html" %}
+{% block title %}Editar abastecimento{% endblock %}
+{% block head_extra %}
+{{ block.super }}
+{% include "fuel/includes/fuel_form_field_size.html" %}
+{% endblock %}
+{% block app %}
+<div class="mb-4 min-w-0 sm:mb-6">
+  <p class="text-sm text-slate-500 dark:text-slate-400"><a href="{% url 'fuel:list' %}" class="hover:underline">Combustível</a> · <a href="{% url 'fuel:detail' entry.pk %}" class="hover:underline">{{ entry.truck.plate }} — {{ entry.fuel_date|date:"d/m/Y" }}</a></p>
+  <h1 class="text-xl font-semibold sm:text-2xl">Editar abastecimento</h1>
+  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+</div>
+<div class="min-w-0 max-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 sm:max-w-xl sm:p-5 dark:border-slate-800 dark:bg-slate-900">
+  {% if is_driver %}
+  <p class="mb-3 text-xs text-slate-500 sm:mb-4">Como motorista, só pode alterar os seus registos.</p>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data" class="fuel-form max-w-full min-w-0 space-y-2.5 sm:space-y-3" id="fuel-form-edit" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200" role="alert">{{ form.non_field_errors }}</div>
+    {% endif %}
+    {% include "fuel/includes/fuel_form_fields.html" %}
+    <div class="flex flex-col gap-2 pt-2 sm:flex-row sm:flex-wrap">
+      <button type="submit" class="w-full rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500 sm:w-auto">Guardar</button>
+      <a href="{% url 'fuel:detail' entry.pk %}" class="w-full rounded-xl border border-slate-200 px-4 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50 sm:w-auto dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

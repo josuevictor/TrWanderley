@@ -1,0 +1,94 @@
+{% extends "base_app.html" %}
+{% block title %}Viagem · {{ trip.customer.name }}{% endblock %}
+{% block app %}
+{% if show_finance_subnav %}{% include "finance/_subnav.html" with active="receitas" %}{% endif %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <p class="text-sm text-slate-500 dark:text-slate-400"><a href="{% url 'finance:receitas' %}" class="hover:underline">Receitas</a> / detalhe</p>
+    <h1 class="text-2xl font-semibold">Receita — {{ trip.trip_date|date:"d/m/Y" }}</h1>
+    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'finance:receitas_edit' trip.pk %}" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Editar</a>
+    <form method="post" action="{% url 'finance:receitas_delete' trip.pk %}" class="inline" onsubmit="return confirm('Excluir este serviço? O lançamento financeiro associado será cancelado.');">
+      {% csrf_token %}
+      <button type="submit" class="rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-900 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/40">Excluir</button>
+    </form>
+  </div>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-2">
+  <dl class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Data</dt>
+        <dd class="mt-1 text-sm">{{ trip.trip_date|date:"d/m/Y" }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Hora</dt>
+        <dd class="mt-1 text-sm">{{ trip.trip_time|time:"H:i"|default:"—" }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Caminhão</dt>
+        <dd class="mt-1 text-sm">{{ trip.truck.plate }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Motorista</dt>
+        <dd class="mt-1 text-sm">{{ trip.driver.name }}</dd>
+      </div>
+      <div class="sm:col-span-2">
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Cliente</dt>
+        <dd class="mt-1 text-sm">{{ trip.customer.name }}</dd>
+      </div>
+      <div class="sm:col-span-2">
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Local de entrega</dt>
+        <dd class="mt-1 text-sm">
+          {% if trip.delivery_place_ref %}
+            {% if trip.delivery_place_ref.label %}<span class="font-medium">{{ trip.delivery_place_ref.label }}</span> — {% endif %}{{ trip.delivery_place_ref.address_line }}
+          {% else %}
+            {{ trip.delivery_place|default:"—" }}
+          {% endif %}
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Volume (m³)</dt>
+        <dd class="mt-1 text-sm font-mono">{% if trip.volume_m3 is not None %}{{ trip.volume_m3|floatformat:3 }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Quantidade de viagens</dt>
+        <dd class="mt-1 text-sm">{{ trip.trip_count }}</dd>
+      </div>
+      <div class="sm:col-span-2">
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Valor cobrado (R$)</dt>
+        <dd class="mt-1 text-sm font-mono">{{ trip.amount_charged|floatformat:2 }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Forma de pagamento</dt>
+        <dd class="mt-1 text-sm">{% if trip.payment_method %}{{ trip.payment_method.name }}{% else %}—{% endif %}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Situação do pagamento</dt>
+        <dd class="mt-1 text-sm">{{ trip.get_payment_status_display }}</dd>
+      </div>
+      <div class="sm:col-span-2">
+        <dt class="text-xs font-medium text-slate-500 dark:text-slate-400">Observações</dt>
+        <dd class="mt-1 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">{{ trip.notes|default:"—" }}</dd>
+      </div>
+    </div>
+  </dl>
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+    <h2 class="text-sm font-semibold">Financeiro</h2>
+    {% if trip.financial_entry_id %}
+    <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">
+      Existe um lançamento de receita associado a esta viagem (atualizado ao guardar).
+      {% if user.is_staff %}
+      <a href="/admin/finance/financialentry/{{ trip.financial_entry_id }}/change/" class="text-sky-600 hover:underline dark:text-sky-400">Ver no admin</a>
+      {% endif %}
+    </p>
+    {% else %}
+    <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">Sem lançamento associado (será criado ao guardar).</p>
+    {% endif %}
+    <p class="mt-4 text-xs text-slate-500 dark:text-slate-400">Ao excluir a viagem, o lançamento financeiro fica <strong>cancelado</strong> no sistema.</p>
+  </div>
+</div>
+{% endblock %}

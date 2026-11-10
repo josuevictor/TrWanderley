@@ -1,0 +1,28 @@
+{% extends "base_app.html" %}
+{% block title %}{{ supplier.name }} · Fornecedor{% endblock %}
+{% block app %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <p class="text-sm text-slate-500 dark:text-slate-400"><a href="{% url 'suppliers:list' %}" class="hover:underline">Fornecedores</a> / detalhe</p>
+    <h1 class="text-2xl font-semibold">{{ supplier.name }}</h1>
+    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'suppliers:edit' supplier.pk %}" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Editar</a>
+    <form method="post" action="{% url 'suppliers:delete' supplier.pk %}" class="inline" onsubmit="return confirm('Excluir este fornecedor?');">
+      {% csrf_token %}
+      <button type="submit" class="rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-900 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/40">Excluir</button>
+    </form>
+  </div>
+</div>
+<div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+  <dl class="grid gap-4 sm:grid-cols-2">
+    <div><dt class="text-xs font-medium text-slate-500">Tipo</dt><dd class="mt-1 text-sm">{{ supplier.get_supplier_type_display }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">CPF/CNPJ</dt><dd class="mt-1 text-sm">{{ supplier.tax_id|default:"—" }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Telefone</dt><dd class="mt-1 text-sm">{{ supplier.phone|default:"—" }}</dd></div>
+    <div class="sm:col-span-2"><dt class="text-xs font-medium text-slate-500">Endereço</dt><dd class="mt-1 text-sm">{{ supplier.address|default:"—" }}</dd></div>
+    <div class="sm:col-span-2"><dt class="text-xs font-medium text-slate-500">Observações</dt><dd class="mt-1 whitespace-pre-wrap text-sm">{{ supplier.notes|default:"—" }}</dd></div>
+  </dl>
+  <p class="mt-6 text-xs text-slate-500">Abastecimentos: <strong>{{ fuel_n }}</strong> · Manutenção: <strong>{{ maint_n }}</strong></p>
+</div>
+{% endblock %}

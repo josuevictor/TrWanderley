@@ -1,0 +1,18 @@
+{% extends "base_app.html" %}
+{% block title %}Editar conta{% endblock %}
+{% block app %}
+{% include "finance/_subnav.html" with active="settings" %}
+<div class="mb-6"><h1 class="text-2xl font-semibold">Editar conta — {{ account.name }}</h1></div>
+<div class="max-w-lg rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <div><label class="block text-xs font-medium" for="{{ form.name.id_for_label }}">Nome</label>{{ form.name }}</div>
+    <div><label class="block text-xs font-medium" for="{{ form.kind.id_for_label }}">Tipo</label>{{ form.kind }}</div>
+    <div><label class="flex items-center gap-2 text-sm">{{ form.is_active }} <span>Ativa</span></label></div>
+    <div class="flex gap-2">
+      <button type="submit" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Guardar</button>
+      <a href="{% url 'finance:account_detail' account.pk %}" class="rounded-xl border border-slate-200 px-4 py-2 text-sm dark:border-slate-700">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

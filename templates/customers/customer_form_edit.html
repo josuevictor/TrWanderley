@@ -1,0 +1,53 @@
+{% extends "base_app.html" %}
+{% block title %}Editar · {{ customer.name }}{% endblock %}
+{% block app %}
+<div class="mb-6">
+  <p class="text-sm text-slate-500 dark:text-slate-400"><a href="{% url 'customers:list' %}" class="hover:underline">Clientes</a> · <a href="{% url 'customers:detail' customer.pk %}" class="hover:underline">{{ customer.name }}</a></p>
+  <h1 class="text-2xl font-semibold">Editar cliente</h1>
+  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+</div>
+<div class="max-w-xl rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+  <form method="post" class="space-y-3">
+    {% csrf_token %}
+    {% for field in form %}
+    <div>
+      <label class="block text-xs font-medium text-slate-600 dark:text-slate-400" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors }}</p>{% endif %}
+    </div>
+    {% endfor %}
+    <fieldset class="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+      <legend class="px-1 text-xs font-medium text-slate-600 dark:text-slate-400">Locais de entrega</legend>
+      {{ places_fs.management_form }}
+      {% if places_fs.non_form_errors %}
+      <p class="mb-2 text-xs text-red-600">{{ places_fs.non_form_errors }}</p>
+      {% endif %}
+      <div class="space-y-3">
+        {% for pf in places_fs.forms %}
+        <div class="rounded-lg border border-dashed border-slate-200 p-2 dark:border-slate-700">
+          {% for hidden in pf.hidden_fields %}{{ hidden }}{% endfor %}
+          <div class="grid gap-2 sm:grid-cols-2">
+            {% for field in pf.visible_fields %}
+            <div class="{% if field.name == 'address_line' %}sm:col-span-2{% endif %}">
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors }}</p>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% if pf.DELETE %}
+          <label class="mt-2 inline-flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+            {{ pf.DELETE }} Remover este local
+          </label>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <div class="flex flex-wrap gap-2 pt-2">
+      <button type="submit" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Guardar alterações</button>
+      <a href="{% url 'customers:detail' customer.pk %}" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

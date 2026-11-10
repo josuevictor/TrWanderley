@@ -1,0 +1,36 @@
+{% extends "base_app.html" %}
+{% block title %}Manutenção · {{ record.truck.plate }}{% endblock %}
+{% block app %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <p class="text-sm text-slate-500 dark:text-slate-400"><a href="{% url 'maintenance:list' %}" class="hover:underline">Manutenção</a> / detalhe</p>
+    <h1 class="text-2xl font-semibold">{{ record.truck.plate }} — {{ record.service_date|date:"d/m/Y" }}</h1>
+    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'maintenance:edit' record.pk %}" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Editar</a>
+    <form method="post" action="{% url 'maintenance:delete' record.pk %}" class="inline" onsubmit="return confirm('Excluir este registo de manutenção?');">
+      {% csrf_token %}
+      <button type="submit" class="rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-900 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/40">Excluir</button>
+    </form>
+  </div>
+</div>
+<div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+  <dl class="grid gap-4 sm:grid-cols-2">
+    <div><dt class="text-xs font-medium text-slate-500">Tipo</dt><dd class="mt-1 text-sm">{{ record.get_kind_display }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Resumo</dt><dd class="mt-1 text-sm">{{ record.title|default:"—" }}</dd></div>
+    <div class="sm:col-span-2"><dt class="text-xs font-medium text-slate-500">Descrição</dt><dd class="mt-1 whitespace-pre-wrap text-sm">{{ record.description|default:"—" }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Oficina</dt><dd class="mt-1 text-sm">{% if record.workshop %}{{ record.workshop.name }}{% else %}{{ record.workshop_name|default:"—" }}{% endif %}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Quilometragem</dt><dd class="mt-1 text-sm font-mono">{{ record.odometer_km|default:"—" }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Peças</dt><dd class="mt-1 text-sm font-mono">{{ record.parts_amount|floatformat:2 }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Mão de obra</dt><dd class="mt-1 text-sm font-mono">{{ record.labor_amount|floatformat:2 }}</dd></div>
+    <div class="sm:col-span-2"><dt class="text-xs font-medium text-slate-500">Total</dt><dd class="mt-1 text-sm font-mono">{{ record.total_amount|floatformat:2 }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Próxima (data)</dt><dd class="mt-1 text-sm">{{ record.next_service_date|date:"d/m/Y"|default:"—" }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Próxima (km)</dt><dd class="mt-1 text-sm font-mono">{{ record.next_service_odometer|default:"—" }}</dd></div>
+    <div class="sm:col-span-2"><dt class="text-xs font-medium text-slate-500">Observações</dt><dd class="mt-1 whitespace-pre-wrap text-sm">{{ record.notes|default:"—" }}</dd></div>
+  </dl>
+  {% if record.receipt %}
+  <p class="mt-4 text-sm"><a href="{{ record.receipt.url }}" class="text-sky-600 hover:underline dark:text-sky-400" target="_blank" rel="noopener">Ver comprovante</a></p>
+  {% endif %}
+</div>
+{% endblock %}

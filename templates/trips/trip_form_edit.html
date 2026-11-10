@@ -1,0 +1,33 @@
+{% extends "base_app.html" %}
+{% block title %}Editar viagem{% endblock %}
+{% block app %}
+{% if show_finance_subnav %}{% include "finance/_subnav.html" with active="receitas" %}{% endif %}
+<div class="mb-6">
+  <p class="text-sm text-slate-500 dark:text-slate-400"><a href="{% url 'finance:receitas' %}" class="hover:underline">Receitas</a> · <a href="{% url 'finance:receitas_detail' trip.pk %}" class="hover:underline">{{ trip.trip_date|date:"d/m/Y" }} — {{ trip.customer.name }}</a></p>
+  <h1 class="text-2xl font-semibold">Editar receita / viagem</h1>
+  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+</div>
+<div class="max-w-xl rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+  {% if is_driver %}
+  <p class="mb-4 text-xs text-slate-500 dark:text-slate-400">Como motorista, só pode alterar os dados das suas viagens.</p>
+  {% endif %}
+  <p class="mb-4 text-xs text-slate-500 dark:text-slate-400">
+    <strong>Valores</strong> em formato brasileiro: <code class="rounded bg-slate-100 px-1 dark:bg-slate-800">2.500,00</code>.
+    Volume em m³: até 3 decimais.
+  </p>
+  <form method="post" class="space-y-3" id="trip-form-edit" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200" role="alert">
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+    {% include "trips/includes/trip_form_fields.html" %}
+    <div class="flex flex-wrap gap-2 pt-2">
+      <button type="submit" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Guardar alterações</button>
+      <a href="{% url 'finance:receitas_detail' trip.pk %}" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% include "trips/includes/trip_delivery_place_script.html" with form_id="trip-form-edit" %}
+{% endblock %}

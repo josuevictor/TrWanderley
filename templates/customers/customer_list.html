@@ -1,0 +1,81 @@
+{% extends "base_app.html" %}
+{% block title %}Clientes{% endblock %}
+{% block app %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold">Clientes</h1>
+  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+</div>
+<div class="grid gap-6 lg:grid-cols-2">
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+    <h2 class="text-sm font-semibold">Novo cliente</h2>
+    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+      Indique <strong>pelo menos um local de entrega</strong> (pode adicionar mais linhas com «Adicionar outro»).
+    </p>
+    <form method="post" class="mt-4 space-y-3">
+      {% csrf_token %}
+      {% for field in form %}
+      <div>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors }}</p>{% endif %}
+      </div>
+      {% endfor %}
+      <fieldset class="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+        <legend class="px-1 text-xs font-medium text-slate-600 dark:text-slate-400">Locais de entrega</legend>
+        {{ places_fs.management_form }}
+        {% if places_fs.non_form_errors %}
+        <p class="mb-2 text-xs text-red-600">{{ places_fs.non_form_errors }}</p>
+        {% endif %}
+        <div class="space-y-3">
+          {% for pf in places_fs.forms %}
+          <div class="rounded-lg border border-dashed border-slate-200 p-2 dark:border-slate-700">
+            {% for hidden in pf.hidden_fields %}{{ hidden }}{% endfor %}
+            <div class="grid gap-2 sm:grid-cols-2">
+              {% for field in pf.visible_fields %}
+              <div class="{% if field.name == 'address_line' %}sm:col-span-2{% endif %}">
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors }}</p>{% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            {% if pf.DELETE %}
+            <label class="mt-2 inline-flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+              {{ pf.DELETE }} Remover este local
+            </label>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <button type="submit" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Guardar</button>
+    </form>
+  </div>
+  <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <table class="min-w-full text-left text-sm">
+      <thead class="border-b border-slate-200 bg-slate-50 dark:border-slate-800">
+        <tr>
+          <th class="px-4 py-3">Nome</th>
+          <th class="px-4 py-3">Telefone</th>
+          <th class="px-4 py-3 text-right">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr class="border-b border-slate-100 dark:border-slate-800">
+          <td class="px-4 py-3 font-medium">{{ c.name }}</td>
+          <td class="px-4 py-3">{{ c.phone|default:"—" }}</td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <a href="{% url 'customers:detail' c.pk %}" class="text-sky-600 hover:underline dark:text-sky-400">Ver</a>
+            <span class="text-slate-300 dark:text-slate-600">·</span>
+            <a href="{% url 'customers:edit' c.pk %}" class="text-slate-600 hover:underline dark:text-slate-400">Editar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="px-4 py-8 text-center text-slate-500">Sem clientes.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

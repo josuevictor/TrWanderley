@@ -1,0 +1,24 @@
+{% extends "base_app.html" %}
+{% block title %}Editar lançamento{% endblock %}
+{% block app %}
+{% include "finance/_subnav.html" with active="settings" %}
+<div class="mb-6"><h1 class="text-2xl font-semibold">Editar lançamento</h1></div>
+<div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+  <form method="post" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {% csrf_token %}
+    <div><label class="block text-xs font-medium">Tipo</label>{{ form.entry_type }}</div>
+    <div class="sm:col-span-2"><label class="block text-xs font-medium">Descrição</label>{{ form.description }}</div>
+    <div><label class="block text-xs font-medium">Categoria</label>{{ form.category }}</div>
+    <div><label class="block text-xs font-medium">Valor</label>{{ form.amount }}{% if form.amount.help_text %}<p class="mt-1 text-xs text-slate-500">{{ form.amount.help_text }}</p>{% endif %}</div>
+    <div><label class="block text-xs font-medium">Competência</label>{{ form.competence_date }}</div>
+    <div><label class="block text-xs font-medium">Vencimento</label>{{ form.due_date }}</div>
+    <div><label class="block text-xs font-medium">Forma de pagamento</label>{{ form.payment_method }}</div>
+    <div><label class="block text-xs font-medium">Conta padrão</label>{{ form.default_account }}</div>
+    <div class="sm:col-span-2 lg:col-span-3"><label class="block text-xs font-medium">Notas</label>{{ form.notes }}</div>
+    <div class="sm:col-span-2 lg:col-span-3 flex gap-2">
+      <button type="submit" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Guardar</button>
+      <a href="{% url 'finance:entry_detail' entry.pk %}" class="rounded-xl border border-slate-200 px-4 py-2 text-sm dark:border-slate-700">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base_app.html" %}
+{% block title %}{{ category.name }} · Categoria{% endblock %}
+{% block app %}
+{% include "finance/_subnav.html" with active="settings" %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <p class="text-sm text-slate-500 dark:text-slate-400"><a href="{% url 'finance:categories' %}" class="hover:underline">Categorias</a> / detalhe</p>
+    <h1 class="text-2xl font-semibold">{{ category.name }}</h1>
+    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'finance:category_edit' category.pk %}" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Editar</a>
+    <form method="post" action="{% url 'finance:category_delete' category.pk %}" class="inline" onsubmit="return confirm('Excluir esta categoria?');">
+      {% csrf_token %}
+      <button type="submit" class="rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-900 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/40">Excluir</button>
+    </form>
+  </div>
+</div>
+<div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+  <dl class="grid gap-4 sm:grid-cols-2">
+    <div><dt class="text-xs font-medium text-slate-500">Tipo</dt><dd class="mt-1 text-sm">{{ category.get_kind_display }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Ativa</dt><dd class="mt-1 text-sm">{% if category.is_active %}Sim{% else %}Não{% endif %}</dd></div>
+  </dl>
+  {% if is_protected_category %}
+  <p class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+    Esta categoria é usada pelo sistema operacional (viagens, combustível, manutenção, etc.) e não pode ser excluída.
+    Pode alterar o <strong>nome</strong> para o que preferir na sua empresa.
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

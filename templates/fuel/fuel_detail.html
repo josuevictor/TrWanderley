@@ -1,0 +1,34 @@
+{% extends "base_app.html" %}
+{% block title %}Abastecimento · {{ entry.truck.plate }}{% endblock %}
+{% block app %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <p class="text-sm text-slate-500 dark:text-slate-400"><a href="{% url 'fuel:list' %}" class="hover:underline">Combustível</a> / detalhe</p>
+    <h1 class="text-2xl font-semibold">{{ entry.truck.plate }} — {{ entry.fuel_date|date:"d/m/Y" }}</h1>
+    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'fuel:edit' entry.pk %}" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Editar</a>
+    <form method="post" action="{% url 'fuel:delete' entry.pk %}" class="inline" onsubmit="return confirm('Excluir este abastecimento?');">
+      {% csrf_token %}
+      <button type="submit" class="rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-900 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/40">Excluir</button>
+    </form>
+  </div>
+</div>
+<div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+  <dl class="grid gap-4 sm:grid-cols-2">
+    <div><dt class="text-xs font-medium text-slate-500">Motorista</dt><dd class="mt-1 text-sm">{{ entry.driver.name }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Combustível</dt><dd class="mt-1 text-sm">{{ entry.get_fuel_type_display }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Litros</dt><dd class="mt-1 text-sm font-mono">{{ entry.liters|floatformat:3 }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Preço / L</dt><dd class="mt-1 text-sm font-mono">{{ entry.price_per_liter|floatformat:4 }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Total</dt><dd class="mt-1 text-sm font-mono">{{ entry.total_amount|floatformat:2 }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Quilometragem</dt><dd class="mt-1 text-sm font-mono">{{ entry.odometer_km|default:"—" }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Posto (fornecedor)</dt><dd class="mt-1 text-sm">{% if entry.supplier %}{{ entry.supplier.name }}{% else %}—{% endif %}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Posto (texto)</dt><dd class="mt-1 text-sm">{{ entry.station_name|default:"—" }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Pagamento</dt><dd class="mt-1 text-sm">{% if entry.payment_method %}{{ entry.payment_method.name }}{% else %}—{% endif %}</dd></div>
+  </dl>
+  {% if entry.receipt %}
+  <p class="mt-4 text-sm"><a href="{{ entry.receipt.url }}" class="text-sky-600 hover:underline dark:text-sky-400" target="_blank" rel="noopener">Ver comprovante</a></p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+<script>
+(function () {
+  var form = document.getElementById("{{ form_id }}");
+  if (!form) return;
+  var custSel = form.querySelector('select[name="customer"]');
+  var refSel = form.querySelector('select[name="delivery_place_ref"]');
+  var freeInp = form.querySelector('input[name="delivery_place"]');
+  if (!custSel || !refSel) return;
+
+  var baseUrlTpl = "{% url 'customers:delivery_places_json' 0 %}".replace("/0/", "/{id}/");
+
+  function fillPlaces(customerId) {
+    var prevSelected = refSel.value;
+    refSel.innerHTML = "";
+    var opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = "— (escolha um local ou use o campo livre) —";
+    refSel.appendChild(opt0);
+    if (!customerId) {
+      if (freeInp) freeInp.readOnly = false;
+      return Promise.resolve();
+    }
+    var url = baseUrlTpl.replace("{id}", customerId);
+    return fetch(url, {
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        (data.places || []).forEach(function (p) {
+          var o = document.createElement("option");
+          o.value = String(p.id);
+          o.textContent = p.label;
+          o.setAttribute("data-address", p.address_line || "");
+          refSel.appendChild(o);
+        });
+        if (prevSelected) {
+          refSel.value = prevSelected;
+        }
+        syncFromRef();
+      })
+      .catch(function () {});
+  }
+
+  function syncFromRef() {
+    if (!freeInp) return;
+    var opt = refSel.options[refSel.selectedIndex];
+    var addr = opt ? opt.getAttribute("data-address") : null;
+    if (refSel.value && addr) {
+      freeInp.value = addr;
+      freeInp.readOnly = true;
+    } else if (!refSel.value) {
+      freeInp.readOnly = false;
+    }
+  }
+
+  custSel.addEventListener("change", function () {
+    fillPlaces(custSel.value).then(function () {
+      if (freeInp) {
+        freeInp.value = "";
+        freeInp.readOnly = false;
+      }
+    });
+  });
+
+  refSel.addEventListener("change", syncFromRef);
+
+  if (custSel.value) {
+    fillPlaces(custSel.value);
+  }
+})();
+</script>

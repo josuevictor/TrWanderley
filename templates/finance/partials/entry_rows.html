@@ -1,0 +1,17 @@
+{% for e in entries %}
+<tr class="border-b border-slate-100 dark:border-slate-800">
+  <td class="px-4 py-3 whitespace-nowrap">{{ e.competence_date|date:"d/m/Y" }}</td>
+  <td class="px-4 py-3">{{ e.get_entry_type_display }}</td>
+  <td class="px-4 py-3">{{ e.description }}</td>
+  <td class="px-4 py-3">{{ e.category.name }}</td>
+  <td class="px-4 py-3 text-right font-mono">{{ e.amount|floatformat:2 }}</td>
+  <td class="px-4 py-3">{{ e.get_settlement_status_display }}</td>
+  <td class="px-4 py-3 text-sm whitespace-nowrap">
+    <a href="{% url 'finance:entry_detail' e.pk %}" class="text-sky-600 hover:underline dark:text-sky-400">Ver</a>
+    <span class="text-slate-300 dark:text-slate-600">·</span>
+    <a href="{% url 'finance:entry_edit' e.pk %}" class="text-sky-600 hover:underline dark:text-sky-400">Editar</a>
+  </td>
+</tr>
+{% empty %}
+<tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">Sem lançamentos.</td></tr>
+{% endfor %}

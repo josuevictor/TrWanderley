@@ -1,0 +1,52 @@
+{% extends "base_app.html" %}
+{% block title %}Funcionários{% endblock %}
+{% block app %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold">Funcionários</h1>
+  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+</div>
+<div class="grid gap-6 lg:grid-cols-2">
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+    <h2 class="text-sm font-semibold">Novo funcionário</h2>
+    <form method="post" class="mt-4 space-y-3">
+      {% csrf_token %}
+      {% for field in form %}
+      <div>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors }}</p>{% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Guardar</button>
+    </form>
+  </div>
+  <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <table class="min-w-full text-left text-sm">
+      <thead class="border-b border-slate-200 bg-slate-50 dark:border-slate-800">
+        <tr>
+          <th class="px-4 py-3">Nome</th>
+          <th class="px-4 py-3">Função</th>
+          <th class="px-4 py-3">Caminhão</th>
+          <th class="px-4 py-3 w-[1%] whitespace-nowrap">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in employees %}
+        <tr class="border-b border-slate-100 dark:border-slate-800">
+          <td class="px-4 py-3">{{ e.name }}</td>
+          <td class="px-4 py-3">{{ e.role_title|default:"—" }}</td>
+          <td class="px-4 py-3">{% if e.truck %}{{ e.truck.plate }}{% else %}—{% endif %}</td>
+          <td class="px-4 py-3 text-sm whitespace-nowrap">
+            <a href="{% url 'employees:detail' e.pk %}" class="text-sky-600 hover:underline dark:text-sky-400">Ver</a>
+            <span class="text-slate-300 dark:text-slate-600">·</span>
+            <a href="{% url 'employees:edit' e.pk %}" class="text-sky-600 hover:underline dark:text-sky-400">Editar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">Sem registos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base_app.html" %}
+{% block title %}Combustível{% endblock %}
+{% block head_extra %}
+{{ block.super }}
+{% include "fuel/includes/fuel_form_field_size.html" %}
+{% endblock %}
+{% block app %}
+<div class="mb-4 min-w-0 sm:mb-6">
+  <h1 class="text-xl font-semibold sm:text-2xl">Abastecimentos</h1>
+  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ company.name }}</p>
+</div>
+<div class="grid min-w-0 gap-4 xl:grid-cols-2 xl:gap-6">
+  <div class="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 sm:p-5 dark:border-slate-800 dark:bg-slate-900">
+    <h2 class="text-sm font-semibold">Novo abastecimento</h2>
+    <p class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+      Valores no formato brasileiro
+      <span class="hidden sm:inline">— ex. litros <code class="rounded bg-slate-100 px-1 dark:bg-slate-800">50,125</code>, preço <code class="rounded bg-slate-100 px-1 dark:bg-slate-800">7,10</code></span>.
+      O total calcula-se ao preencher litros e preço.
+    </p>
+    <form method="post" enctype="multipart/form-data" class="fuel-form mt-3 max-w-full min-w-0 space-y-2.5 sm:mt-4 sm:space-y-3" id="fuel-form" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+      <div class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200" role="alert">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+      {% include "fuel/includes/fuel_form_fields.html" %}
+      <button type="submit" class="w-full rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500 sm:w-auto">Guardar</button>
+    </form>
+  </div>
+  <div class="min-w-0 overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <table class="min-w-full text-left text-sm">
+      <thead class="border-b border-slate-200 bg-slate-50 dark:border-slate-800">
+        <tr>
+          <th class="px-3 py-2 sm:px-4 sm:py-3">Data</th>
+          <th class="px-3 py-2 sm:px-4 sm:py-3">Caminhão</th>
+          <th class="px-3 py-2 sm:px-4 sm:py-3">Total</th>
+          <th class="px-3 py-2 sm:px-4 sm:py-3 w-[1%] whitespace-nowrap">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr class="border-b border-slate-100 dark:border-slate-800">
+          <td class="px-3 py-2 whitespace-nowrap sm:px-4 sm:py-3">{{ e.fuel_date|date:"d/m/Y" }}</td>
+          <td class="px-3 py-2 sm:px-4 sm:py-3">{{ e.truck.plate }}</td>
+          <td class="px-3 py-2 font-mono text-xs sm:px-4 sm:py-3 sm:text-sm">{{ e.total_amount|floatformat:2 }}</td>
+          <td class="px-3 py-2 text-xs whitespace-nowrap sm:px-4 sm:py-3 sm:text-sm">
+            <a href="{% url 'fuel:detail' e.pk %}" class="text-sky-600 hover:underline dark:text-sky-400">Ver</a>
+            <span class="text-slate-300 dark:text-slate-600">·</span>
+            <a href="{% url 'fuel:edit' e.pk %}" class="text-sky-600 hover:underline dark:text-sky-400">Editar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">Sem abastecimentos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

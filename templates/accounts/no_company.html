@@ -1,0 +1,35 @@
+{% extends "base_app.html" %}
+{% block title %}Configurar empresa{% endblock %}
+{% block app %}
+<div class="mx-auto max-w-lg rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-900 dark:bg-amber-950/30">
+  <h1 class="text-lg font-semibold text-amber-900 dark:text-amber-100">Sem acesso a empresa</h1>
+  <p class="mt-2 text-sm text-amber-900/80 dark:text-amber-200/90">
+    A sua conta ainda não está ligada a nenhuma empresa ativa, ou não há empresa selecionada na sessão.
+  </p>
+  {% if memberships %}
+  <p class="mt-4 text-sm font-medium text-amber-900 dark:text-amber-100">Escolha a empresa:</p>
+  <ul class="mt-2 space-y-2">
+    {% for m in memberships %}
+    <li>
+      <form method="post" action="{% url 'accounts:switch_company' m.company_id %}" class="inline">
+        {% csrf_token %}
+        <button type="submit" class="w-full rounded-xl border border-amber-300 bg-white px-4 py-2 text-left text-sm font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/60">
+          {{ m.company.name }} — {{ m.get_role_display }}
+        </button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="mt-4 space-y-3 text-sm text-amber-900/90 dark:text-amber-100/90">
+    <p><strong>Superutilizador:</strong> no <a href="{% url 'admin:companies_company_add' %}" class="underline">admin</a>, crie uma <em>Empresa</em> e depois um <em>Membro da empresa</em> ligando o seu utilizador.</p>
+    <p>Ou peça a outro administrador para o adicionar.</p>
+  </div>
+  {% endif %}
+  <p class="mt-6 text-xs text-amber-800/70 dark:text-amber-300/70">
+    <a href="{% url 'admin:index' %}" class="underline">Abrir admin</a>
+    ·
+    <a href="{% url 'accounts:logout' %}" class="underline">Sair</a>
+  </p>
+</div>
+{% endblock %}

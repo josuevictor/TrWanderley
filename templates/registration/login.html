@@ -1,0 +1,27 @@
+{% extends "base_app.html" %}
+{% block title %}Entrar · Caminhão-pipa{% endblock %}
+{% block app %}
+<div class="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+  <h1 class="text-xl font-semibold">Entrar</h1>
+  <form method="post" action="{% url 'accounts:login' %}" class="mt-6 space-y-4">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+    <div>
+      <label class="block text-sm font-medium" for="{{ form.username.id_for_label }}">Utilizador</label>
+      {{ form.username }}
+      {% if form.username.errors %}<p class="mt-1 text-xs text-red-600">{{ form.username.errors }}</p>{% endif %}
+    </div>
+    <div>
+      <label class="block text-sm font-medium" for="{{ form.password.id_for_label }}">Palavra-passe</label>
+      {{ form.password }}
+      {% if form.password.errors %}<p class="mt-1 text-xs text-red-600">{{ form.password.errors }}</p>{% endif %}
+    </div>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="w-full rounded-xl bg-sky-600 py-2.5 text-sm font-semibold text-white hover:bg-sky-500">Entrar</button>
+  </form>
+</div>
+{% endblock %}

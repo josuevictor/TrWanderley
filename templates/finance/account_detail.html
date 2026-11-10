@@ -1,0 +1,25 @@
+{% extends "base_app.html" %}
+{% block title %}{{ account.name }} · Conta{% endblock %}
+{% block app %}
+{% include "finance/_subnav.html" with active="settings" %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <p class="text-sm text-slate-500 dark:text-slate-400"><a href="{% url 'finance:accounts' %}" class="hover:underline">Contas</a> / detalhe</p>
+    <h1 class="text-2xl font-semibold">{{ account.name }}</h1>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'finance:account_edit' account.pk %}" class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">Editar</a>
+    <form method="post" action="{% url 'finance:account_delete' account.pk %}" class="inline" onsubmit="return confirm('Excluir esta conta?');">
+      {% csrf_token %}
+      <button type="submit" class="rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-900 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/40">Excluir</button>
+    </form>
+  </div>
+</div>
+<div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+  <dl class="grid gap-4 sm:grid-cols-2">
+    <div><dt class="text-xs font-medium text-slate-500">Tipo</dt><dd class="mt-1 text-sm">{{ account.get_kind_display }}</dd></div>
+    <div><dt class="text-xs font-medium text-slate-500">Ativa</dt><dd class="mt-1 text-sm">{% if account.is_active %}Sim{% else %}Não{% endif %}</dd></div>
+  </dl>
+  <p class="mt-4 text-xs text-slate-500">Não é possível excluir se existirem movimentos de caixa nesta conta.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head_extra %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+        },
+      },
+    },
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="{% static 'manifest.webmanifest' %}">
+<link rel="icon" href="{% static 'icons/pwa-icon-192.png' %}" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="{% static 'icons/pwa-icon-192.png' %}">
+<meta name="theme-color" content="#001A4D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+{% endblock %}
+{% block body %}
+<div
+  x-data="{ dark: localStorage.getItem('theme') === 'dark', mobileNavOpen: false }"
+  x-init="$watch('dark', v => { localStorage.setItem('theme', v ? 'dark' : 'light'); document.documentElement.classList.toggle('dark', v) }); if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark'); $watch('mobileNavOpen', v => { document.body.classList.toggle('overflow-hidden', v) })"
+  @keydown.escape.window="mobileNavOpen = false"
+  class="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100"
+>
+  {% csrf_token %}
+  <div class="flex min-h-screen flex-col md:flex-row">
+    <aside class="hidden w-64 shrink-0 border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 md:block">
+      <div class="flex items-center gap-2 px-2">
+        <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400">
+          <i data-lucide="truck" class="h-5 w-5"></i>
+        </span>
+        <div>
+          <p class="text-sm font-semibold">Transportadora Wanderley</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Gestão</p>
+        </div>
+      </div>
+      <nav class="mt-8 space-y-1">
+        {% block aside_nav %}
+        {% include "includes/app_nav_links.html" %}
+        {% endblock %}
+      </nav>
+    </aside>
+
+    {# Menu gaveta — telemóvel / tablet retrato #}
+    <div
+      class="fixed inset-0 z-40 md:hidden"
+      x-show="mobileNavOpen"
+      x-cloak
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      aria-hidden="true"
+    >
+      <div class="absolute inset-0 bg-slate-900/50 dark:bg-black/60" @click="mobileNavOpen = false"></div>
+      <div
+        id="mobile-nav-drawer"
+        class="absolute left-0 top-0 flex h-full w-[min(100vw-2.5rem,20rem)] flex-col border-r border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900"
+        x-show="mobileNavOpen"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="-translate-x-full"
+        x-transition:enter-end="translate-x-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="translate-x-0"
+        x-transition:leave-end="-translate-x-full"
+        @click.stop
+      >
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400">
+              <i data-lucide="truck" class="h-5 w-5"></i>
+            </span>
+            <span class="text-sm font-semibold">Menu</span>
+          </div>
+          <button
+            type="button"
+            class="inline-flex h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            @click="mobileNavOpen = false"
+            aria-label="Fechar menu"
+          >
+            <i data-lucide="x" class="h-6 w-6"></i>
+          </button>
+        </div>
+        <nav class="flex-1 overflow-y-auto overscroll-contain px-3 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {% include "includes/app_nav_links.html" %}
+        </nav>
+      </div>
+    </div>
+
+    <div class="flex min-w-0 flex-1 flex-col">
+      <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 pt-[env(safe-area-inset-top)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-3">
+          <div class="flex min-w-0 flex-1 items-center gap-2 md:flex-none">
+            <button
+              type="button"
+              class="inline-flex h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 md:hidden dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              @click="mobileNavOpen = true; $nextTick(() => { if (window.lucide) lucide.createIcons(); })"
+              :aria-expanded="mobileNavOpen ? 'true' : 'false'"
+              aria-controls="mobile-nav-drawer"
+              aria-label="Abrir menu"
+            >
+              <i data-lucide="menu" class="h-6 w-6"></i>
+            </button>
+            <div class="hidden items-center gap-2 md:flex">
+              <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                <i data-lucide="truck" class="h-5 w-5"></i>
+              </span>
+              <span class="font-semibold">Caminhão-pipa</span>
+            </div>
+          </div>
+          <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-1 md:flex-none">
+            {% if user.is_authenticated and user_company_memberships %}
+            <form id="company-switch-form" method="post" action="#" class="flex min-w-0 flex-1 items-center gap-2 sm:flex-initial">
+              {% csrf_token %}
+              <label class="sr-only" for="company-switch">Empresa</label>
+              <select
+                id="company-switch"
+                name="company_id"
+                class="min-h-11 w-full min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-base md:text-sm dark:border-slate-700 dark:bg-slate-800 sm:max-w-[12rem] sm:flex-none md:max-w-none"
+                onchange="var f=document.getElementById('company-switch-form'); var u='{% url 'accounts:switch_company' 0 %}'; f.action=u.replace('/0/', '/'+this.value+'/'); f.submit();"
+              >
+                {% for m in user_company_memberships %}
+                <option value="{{ m.company_id }}" {% if current_company and m.company_id == current_company.id %}selected{% endif %}>
+                  {{ m.company.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </form>
+            {% elif user.is_authenticated %}
+            <span class="text-sm text-amber-600 dark:text-amber-400">Sem empresa — peça acesso no admin.</span>
+            {% endif %}
+          </div>
+          <div class="flex shrink-0 items-center gap-1 sm:gap-2">
+            <button
+              type="button"
+              @click="dark = !dark"
+              class="inline-flex h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              aria-label="Alternar tema"
+            >
+              <i x-show="!dark" data-lucide="moon" class="h-5 w-5"></i>
+              <i x-show="dark" x-cloak data-lucide="sun" class="h-5 w-5"></i>
+            </button>
+            {% if user.is_authenticated %}
+            <span class="hidden max-w-[7rem] truncate text-sm text-slate-600 dark:text-slate-400 sm:inline md:max-w-none">{{ user.get_username }}</span>
+            <form method="post" action="{% url 'accounts:logout' %}" class="inline">
+              {% csrf_token %}
+              <button type="submit" class="min-h-11 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 dark:bg-sky-600 dark:hover:bg-sky-500">
+                Sair
+              </button>
+            </form>
+            {% else %}
+            <a href="{% url 'accounts:login' %}" class="inline-flex min-h-11 items-center rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-500">Entrar</a>
+            {% endif %}
+          </div>
+        </div>
+      </header>
+      <main class="mx-auto w-full max-w-6xl flex-1 p-3 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:p-4 md:pb-8">
+        {% if messages %}
+        <ul class="mb-4 space-y-2">
+          {% for message in messages %}
+          <li class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-900">{{ message }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% block app %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  <nav class="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] pt-1 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 md:hidden" aria-label="Navegação rápida">
+    <div class="mx-auto flex max-w-full flex-nowrap justify-around gap-1 overflow-x-auto px-1 text-[11px] leading-tight [-ms-overflow-style:none] [scrollbar-width:none] sm:max-w-lg [&::-webkit-scrollbar]:hidden">
+      {% block mobile_nav %}
+      <a href="{% url 'dashboard:home' %}" class="flex min-h-[3.25rem] min-w-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 text-slate-600 dark:text-slate-300 {% if nav_active == 'dashboard' %}text-sky-700 dark:text-sky-400{% endif %}">
+        <i data-lucide="home" class="h-6 w-6"></i>
+        <span>Início</span>
+      </a>
+      {% if active_membership and active_membership.role != 'driver' %}
+      <a href="{% url 'finance:home' %}" class="flex min-h-[3.25rem] min-w-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 text-slate-600 dark:text-slate-300 {% if nav_active == 'finance' %}text-sky-700 dark:text-sky-400{% endif %}">
+        <i data-lucide="wallet" class="h-6 w-6"></i>
+        <span>Finanças</span>
+      </a>
+      {% endif %}
+      <a href="{% url 'finance:receitas' %}" class="flex min-h-[3.25rem] min-w-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 text-slate-600 dark:text-slate-300 {% if nav_active == 'finance_receitas' %}text-sky-700 dark:text-sky-400{% endif %}">
+        <i data-lucide="circle-dollar-sign" class="h-6 w-6"></i>
+        <span>Receitas</span>
+      </a>
+      <a href="{% url 'fuel:list' %}" class="flex min-h-[3.25rem] min-w-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 text-slate-600 dark:text-slate-300 {% if nav_active == 'fuel' %}text-sky-700 dark:text-sky-400{% endif %}">
+        <i data-lucide="fuel" class="h-6 w-6"></i>
+        <span>Combustível</span>
+      </a>
+      <button
+        type="button"
+        class="flex min-h-[3.25rem] min-w-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 text-slate-600 dark:text-slate-300"
+        @click="mobileNavOpen = true; $nextTick(() => { if (window.lucide) lucide.createIcons(); })"
+        aria-label="Abrir menu completo"
+      >
+        <i data-lucide="menu" class="h-6 w-6"></i>
+        <span>Mais</span>
+      </button>
+      {% endblock %}
+    </div>
+  </nav>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/br-inputs.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+</script>
+<script>
+  document.body.addEventListener('htmx:configRequest', function (evt) {
+    var t = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (t && t.value) evt.detail.headers['X-CSRFToken'] = t.value;
+  });
+  document.body.addEventListener('htmx:afterSwap', function () {
+    if (window.lucide) lucide.createIcons();
+    if (window.BRInputs) window.BRInputs.init(document.body);
+  });
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('{% static "sw.js" %}').catch(function () {});
+  }
+</script>
+<style>[x-cloak]{display:none!important}</style>
+{% endblock %}
