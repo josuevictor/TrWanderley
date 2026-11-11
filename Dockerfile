@@ -16,7 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN useradd --create-home --shell /bin/bash appuser
+RUN useradd --create-home --shell /bin/bash appuser \
+    && mkdir -p /app/staticfiles /app/media \
+    && chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000
