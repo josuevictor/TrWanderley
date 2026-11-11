@@ -51,6 +51,10 @@ Gerar `SECRET_KEY` (no laptop ou no servidor):
 python3 -c "import secrets; print(secrets.token_urlsafe(50))"
 ```
 
+## Acesso PWA / celular (Cloudflare)
+
+Ver [CLOUDFLARE_TUNNEL.md](CLOUDFLARE_TUNNEL.md) — script `scripts/start-cloudflared-trw.sh`.
+
 ## 2. Atualizações
 
 ```bash
