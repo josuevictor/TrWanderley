@@ -13,7 +13,7 @@ class Customer(TimeStampedModel):
         related_name="customers",
         verbose_name="Empresa",
     )
-    name = models.CharField("Nome ou razão social", max_length=255)
+    name = models.CharField("Nome ou razão social", max_length=255, blank=True, default="")
     tax_id = models.CharField("CPF/CNPJ", max_length=18, blank=True)
     phone = models.CharField("Telefone", max_length=32, blank=True)
     email = models.EmailField("E-mail", blank=True)
@@ -40,7 +40,7 @@ class CustomerDeliveryPlace(TimeStampedModel):
         verbose_name="Cliente",
     )
     label = models.CharField("Nome do local (opcional)", max_length=120, blank=True)
-    address_line = models.CharField("Endereço / local de entrega", max_length=512)
+    address_line = models.CharField("Endereço / local de entrega", max_length=512, blank=True, default="")
     sort_order = models.PositiveSmallIntegerField("Ordem", default=0)
 
     class Meta:

@@ -96,3 +96,23 @@ class TruckFormTests(TestCase):
         truck = form.save()
         self.assertEqual(truck.company_id, self.company.pk)
         self.assertEqual(Truck.objects.filter(company=self.company, plate="JKL4F56").count(), 1)
+
+    def test_truck_form_accepts_all_empty_except_status(self):
+        form = TruckForm(
+            {
+                "plate": "",
+                "model": "",
+                "brand": "",
+                "year": "",
+                "tank_capacity_liters": "",
+                "current_odometer": "",
+                "acquisition_date": "",
+                "status": TruckStatus.ACTIVE,
+                "notes": "",
+            },
+            company=self.company,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        truck = form.save()
+        self.assertEqual(truck.company_id, self.company.pk)
+        self.assertIsNone(truck.plate)

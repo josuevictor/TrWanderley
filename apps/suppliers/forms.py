@@ -1,5 +1,6 @@
 from django import forms
 
+from apps.core.form_utils import finalize_company_form
 from apps.finance.forms import T_INPUT, T_SELECT
 
 from .models import Supplier
@@ -21,6 +22,7 @@ class SupplierForm(forms.ModelForm):
     def __init__(self, *args, company, **kwargs):
         self.company = company
         super().__init__(*args, **kwargs)
+        finalize_company_form(self)
 
     def save(self, commit=True):
         obj = super().save(commit=False)

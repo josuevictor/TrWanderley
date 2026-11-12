@@ -31,12 +31,16 @@ class FuelEntry(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="fuel_entries",
         verbose_name="Caminhão",
+        null=True,
+        blank=True,
     )
     driver = models.ForeignKey(
         Employee,
         on_delete=models.PROTECT,
         related_name="fuel_entries",
         verbose_name="Motorista",
+        null=True,
+        blank=True,
     )
     supplier = models.ForeignKey(
         Supplier,
@@ -47,20 +51,23 @@ class FuelEntry(TimeStampedModel):
         verbose_name="Posto / fornecedor",
     )
     station_name = models.CharField("Posto (texto)", max_length=255, blank=True)
-    fuel_date = models.DateField("Data")
+    fuel_date = models.DateField("Data", null=True, blank=True)
     fuel_type = models.CharField(
         "Combustível",
         max_length=32,
         choices=FuelType.choices,
         default=FuelType.DIESEL,
     )
-    liters = models.DecimalField("Litros", max_digits=12, decimal_places=3)
+    liters = models.DecimalField("Litros", max_digits=12, decimal_places=3, default=Decimal("0"))
     price_per_liter = models.DecimalField(
         "Preço por litro",
         max_digits=12,
         decimal_places=4,
+        default=Decimal("0"),
     )
-    total_amount = models.DecimalField("Valor total", max_digits=14, decimal_places=2)
+    total_amount = models.DecimalField(
+        "Valor total", max_digits=14, decimal_places=2, default=Decimal("0")
+    )
     odometer_km = models.DecimalField(
         "Quilometragem",
         max_digits=12,
@@ -93,7 +100,9 @@ class FuelEntry(TimeStampedModel):
         indexes = [models.Index(fields=["company", "fuel_date"])]
 
     def __str__(self) -> str:
-        return f"{self.truck.plate} — {self.fuel_date}"
+        plate = self.truck.plate if self.truck_id else "—"
+        when = self.fuel_date or "—"
+        return f"{plate} — {when}"
 
     def clean(self):
         super().clean()
@@ -105,12 +114,12 @@ class FuelEntry(TimeStampedModel):
             raise ValidationError("O fornecedor deve pertencer à mesma empresa.")
         if self.payment_method_id and cid is not None and self.payment_method.company_id != cid:
             raise ValidationError("A forma de pagamento deve pertencer à mesma empresa.")
-        if self.liters is not None and self.liters <= 0:
-            raise ValidationError("Litros devem ser positivos.")
+        if self.liters is not None and self.liters < 0:
+            raise ValidationError("Litros inválidos.")
         if self.price_per_liter is not None and self.price_per_liter < 0:
             raise ValidationError("Preço por litro inválido.")
-        if self.total_amount is not None and self.total_amount <= 0:
-            raise ValidationError("Valor total deve ser positivo.")
+        if self.total_amount is not None and self.total_amount < 0:
+            raise ValidationError("Valor total inválido.")
         if self.liters and self.price_per_liter is not None and self.total_amount:
             calc = (self.liters * self.price_per_liter).quantize(
                 Decimal("0.01"), rounding=ROUND_HALF_UP

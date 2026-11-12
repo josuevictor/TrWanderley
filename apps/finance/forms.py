@@ -6,6 +6,7 @@ import unicodedata
 from django import forms
 from django.db.models import Q
 
+from apps.core.form_utils import finalize_company_form
 from apps.core.money import format_br_decimal, parse_br_decimal
 
 from .constants import PROTECTED_CATEGORY_SLUGS
@@ -55,6 +56,7 @@ class FinancialCategoryForm(forms.ModelForm):
         self.fields["kind"].widget.attrs.update({"class": T_SELECT})
         self.fields["is_active"].widget.attrs.update({"class": T_CHECK})
         self.fields["name"].help_text = "O código interno é gerado automaticamente a partir do nome."
+        finalize_company_form(self)
 
     def _assign_slug(self, obj: FinancialCategory) -> None:
         if obj.slug and obj.slug in PROTECTED_CATEGORY_SLUGS:
@@ -93,6 +95,7 @@ class PaymentMethodForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["name"].widget.attrs.update({"class": T_INPUT})
         self.fields["is_active"].widget.attrs.update({"class": T_CHECK})
+        finalize_company_form(self)
 
     def save(self, commit=True):
         obj = super().save(commit=False)
@@ -116,6 +119,7 @@ class FinancialAccountForm(forms.ModelForm):
         self.fields["name"].widget.attrs.update({"class": T_INPUT})
         self.fields["kind"].widget.attrs.update({"class": T_SELECT})
         self.fields["is_active"].widget.attrs.update({"class": T_CHECK})
+        finalize_company_form(self)
 
     def save(self, commit=True):
         obj = super().save(commit=False)
@@ -165,7 +169,7 @@ class FinancialEntryForm(forms.ModelForm):
         self.fields["amount"] = forms.CharField(
             label="Valor",
             help_text=MONEY_HELP_BR,
-            required=True,
+            required=False,
             initial=amt_initial,
             widget=forms.TextInput(
                 attrs={
@@ -200,9 +204,12 @@ class FinancialEntryForm(forms.ModelForm):
         )
         self.fields["default_account"].required = False
         self.fields["default_account"].widget.attrs.update({"class": T_SELECT})
+        finalize_company_form(self)
 
     def clean_category(self):
-        cat = self.cleaned_data["category"]
+        cat = self.cleaned_data.get("category")
+        if cat is None:
+            return None
         if cat.company_id != self.company.id:
             raise forms.ValidationError("Categoria inválida.")
         return cat
@@ -210,13 +217,15 @@ class FinancialEntryForm(forms.ModelForm):
     def clean_amount(self):
         raw = self.cleaned_data.get("amount", "")
         if raw is None or (isinstance(raw, str) and not str(raw).strip()):
-            raise forms.ValidationError("Indique o valor.")
+            from decimal import Decimal
+
+            return Decimal("0")
         try:
             v = parse_br_decimal(raw)
         except ValueError as e:
             raise forms.ValidationError(str(e)) from e
-        if v <= 0:
-            raise forms.ValidationError("O valor deve ser maior que zero.")
+        if v < 0:
+            raise forms.ValidationError("O valor não pode ser negativo.")
         return v
 
     def clean(self):
@@ -275,7 +284,7 @@ class CashMovementForm(forms.ModelForm):
         self.fields["amount"] = forms.CharField(
             label="Valor",
             help_text=MONEY_HELP_BR,
-            required=True,
+            required=False,
             initial=amt_initial,
             widget=forms.TextInput(
                 attrs={
@@ -301,9 +310,12 @@ class CashMovementForm(forms.ModelForm):
         )
         self.fields["payment_method"].required = False
         self.fields["payment_method"].widget.attrs.update({"class": T_SELECT})
+        finalize_company_form(self)
 
     def clean_financial_account(self):
-        acc = self.cleaned_data["financial_account"]
+        acc = self.cleaned_data.get("financial_account")
+        if acc is None:
+            return None
         if acc.company_id != self.company.id:
             raise forms.ValidationError("Conta inválida.")
         return acc
@@ -311,13 +323,15 @@ class CashMovementForm(forms.ModelForm):
     def clean_amount(self):
         raw = self.cleaned_data.get("amount", "")
         if raw is None or (isinstance(raw, str) and not str(raw).strip()):
-            raise forms.ValidationError("Indique o valor.")
+            from decimal import Decimal
+
+            return Decimal("0")
         try:
             v = parse_br_decimal(raw)
         except ValueError as e:
             raise forms.ValidationError(str(e)) from e
-        if v <= 0:
-            raise forms.ValidationError("O valor deve ser maior que zero.")
+        if v < 0:
+            raise forms.ValidationError("O valor não pode ser negativo.")
         return v
 
     def save(self, commit=True):

@@ -3,6 +3,7 @@ from decimal import Decimal
 from django import forms
 from django.db.models import Q
 
+from apps.core.form_utils import finalize_company_form
 from apps.core.money import format_br_decimal, parse_br_decimal
 from apps.customers.models import Customer, CustomerDeliveryPlace
 from apps.employees.models import Employee, EmployeeStatus
@@ -106,8 +107,7 @@ class TripForm(forms.ModelForm):
 
         self.fields["trip_count"] = forms.CharField(
             label="Quantidade de viagens",
-            required=True,
-            min_length=1,
+            required=False,
             initial=count_initial or "1",
             widget=forms.TextInput(
                 attrs={
@@ -161,7 +161,7 @@ class TripForm(forms.ModelForm):
 
         self.fields["amount_charged"] = forms.CharField(
             label="Valor cobrado",
-            required=True,
+            required=False,
             help_text=MONEY_HELP,
             initial=amt_initial,
             widget=forms.TextInput(
@@ -173,6 +173,8 @@ class TripForm(forms.ModelForm):
                 }
             ),
         )
+
+        finalize_company_form(self)
 
     def _parse_optional_volume(self) -> Decimal | None:
         raw = self.cleaned_data.get("volume_m3", "")
@@ -192,7 +194,7 @@ class TripForm(forms.ModelForm):
     def clean_amount_charged(self):
         raw = self.cleaned_data.get("amount_charged", "")
         if raw is None or (isinstance(raw, str) and not str(raw).strip()):
-            raise forms.ValidationError("Indique o valor cobrado.")
+            return Decimal("0")
         try:
             v = parse_br_decimal(raw)
         except ValueError as e:
@@ -205,7 +207,7 @@ class TripForm(forms.ModelForm):
         raw = self.cleaned_data.get("trip_count", "")
         s = str(raw or "").strip().replace(".", "").replace(",", "")
         if not s:
-            raise forms.ValidationError("Indique a quantidade de viagens.")
+            return 1
         if not s.isdigit():
             raise forms.ValidationError("Use apenas números inteiros (ex.: 5).")
         n = int(s)
@@ -217,18 +219,11 @@ class TripForm(forms.ModelForm):
         data = super().clean()
         customer = data.get("customer")
         dref = data.get("delivery_place_ref")
-        free = (data.get("delivery_place") or "").strip()
 
         if dref and customer and dref.customer_id != customer.pk:
             self.add_error("delivery_place_ref", "Este local não pertence ao cliente selecionado.")
         if dref:
             data["delivery_place"] = dref.address_line
-        elif not free:
-            # Pelo menos um dos dois
-            self.add_error(
-                "delivery_place",
-                "Indique o local de entrega (cadastrado ou texto livre).",
-            )
         return data
 
     def save(self, commit=True):

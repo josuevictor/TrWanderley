@@ -20,7 +20,7 @@ class Truck(TimeStampedModel):
         related_name="trucks",
         verbose_name="Empresa",
     )
-    plate = models.CharField("Matrícula", max_length=16, db_index=True)
+    plate = models.CharField("Matrícula", max_length=16, db_index=True, null=True, blank=True)
     model = models.CharField("Modelo", max_length=128, blank=True)
     brand = models.CharField("Marca", max_length=128, blank=True)
     year = models.PositiveSmallIntegerField("Ano", null=True, blank=True)
@@ -55,7 +55,8 @@ class Truck(TimeStampedModel):
         indexes = [models.Index(fields=["company", "status"])]
 
     def __str__(self) -> str:
-        return f"{self.plate} ({self.company.name})"
+        plate = self.plate or "—"
+        return f"{plate} ({self.company.name})"
 
     def clean(self):
         super().clean()

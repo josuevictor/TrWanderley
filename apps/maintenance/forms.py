@@ -3,6 +3,7 @@ from decimal import Decimal
 from django import forms
 from django.db.models import Q
 
+from apps.core.form_utils import finalize_company_form
 from apps.core.money import format_br_decimal, parse_br_decimal
 from apps.finance.forms import T_INPUT, T_SELECT
 from apps.suppliers.models import Supplier
@@ -147,6 +148,8 @@ class MaintenanceForm(forms.ModelForm):
             ),
         )
 
+        finalize_company_form(self)
+
     def _parse_money(self, field_name, *, allow_empty_as_zero=False):
         raw = self.cleaned_data.get(field_name, "")
         if raw is None or (isinstance(raw, str) and not raw.strip()):
@@ -192,11 +195,7 @@ class MaintenanceForm(forms.ModelForm):
         labor = data.get("labor_amount")
         if parts is None or labor is None:
             return data
-        data["total_amount"] = parts + labor
-        if data["total_amount"] <= 0:
-            raise forms.ValidationError(
-                {"total_amount": "O valor total (peças + mão de obra) deve ser maior que zero."}
-            )
+        data["total_amount"] = (parts or Decimal("0")) + (labor or Decimal("0"))
         return data
 
     def save(self, commit=True):

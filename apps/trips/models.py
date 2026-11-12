@@ -30,20 +30,26 @@ class Trip(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="trips",
         verbose_name="Caminhão",
+        null=True,
+        blank=True,
     )
     driver = models.ForeignKey(
         Employee,
         on_delete=models.PROTECT,
         related_name="trips_driven",
         verbose_name="Motorista",
+        null=True,
+        blank=True,
     )
     customer = models.ForeignKey(
         Customer,
         on_delete=models.PROTECT,
         related_name="trips",
         verbose_name="Cliente",
+        null=True,
+        blank=True,
     )
-    trip_date = models.DateField("Data")
+    trip_date = models.DateField("Data", null=True, blank=True)
     trip_time = models.TimeField("Hora", null=True, blank=True)
     water_source = models.CharField("Local de captação", max_length=255, blank=True)
     delivery_place_ref = models.ForeignKey(
@@ -59,7 +65,9 @@ class Trip(TimeStampedModel):
         "Volume (m³)", max_digits=12, decimal_places=3, null=True, blank=True
     )
     trip_count = models.PositiveIntegerField("Quantidade de viagens", default=1)
-    amount_charged = models.DecimalField("Valor cobrado", max_digits=14, decimal_places=2)
+    amount_charged = models.DecimalField(
+        "Valor cobrado", max_digits=14, decimal_places=2, default=Decimal("0")
+    )
     payment_method = models.ForeignKey(
         "finance.PaymentMethod",
         on_delete=models.SET_NULL,
@@ -95,7 +103,9 @@ class Trip(TimeStampedModel):
         ]
 
     def __str__(self) -> str:
-        return f"Viagem {self.trip_date} — {self.customer.name}"
+        cust = self.customer.name if self.customer_id else "—"
+        when = self.trip_date or "—"
+        return f"Viagem {when} — {cust}"
 
     def clean(self):
         super().clean()

@@ -1,6 +1,7 @@
 from django import forms
 from django.db.models import Q
 
+from apps.core.form_utils import finalize_company_form
 from apps.finance.forms import T_INPUT, T_SELECT
 
 from .models import Employee, EmployeeStatus
@@ -42,6 +43,7 @@ class EmployeeForm(forms.ModelForm):
         self.fields["truck"].queryset = Truck.objects.filter(tq).distinct().order_by("plate")
         self.fields["truck"].required = False
         self.fields["truck"].widget.attrs.update({"class": T_SELECT})
+        finalize_company_form(self)
 
     def save(self, commit=True):
         obj = super().save(commit=False)

@@ -27,7 +27,7 @@ class Employee(TimeStampedModel):
         related_name="employee_profile",
         verbose_name="Utilizador (login)",
     )
-    name = models.CharField("Nome", max_length=255)
+    name = models.CharField("Nome", max_length=255, blank=True, default="")
     cpf = models.CharField("CPF", max_length=14, blank=True, db_index=True)
     phone = models.CharField("Telefone", max_length=32, blank=True)
     address = models.CharField("Endereço", max_length=512, blank=True)

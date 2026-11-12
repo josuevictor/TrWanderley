@@ -3,6 +3,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from django import forms
 from django.db.models import Q
 
+from apps.core.form_utils import finalize_company_form
 from apps.core.money import format_br_decimal, parse_br_decimal
 from apps.employees.models import Employee, EmployeeStatus
 from apps.finance.models import PaymentMethod
@@ -103,7 +104,7 @@ class FuelEntryForm(forms.ModelForm):
             (
                 "liters",
                 "Litros",
-                True,
+                False,
                 "Quantidade abastecida (ex.: 50 ou 50,125).",
                 "0,000",
                 3,
@@ -112,7 +113,7 @@ class FuelEntryForm(forms.ModelForm):
             (
                 "price_per_liter",
                 "Preço por litro",
-                True,
+                False,
                 MONEY_HELP,
                 "0,0000",
                 4,
@@ -163,6 +164,8 @@ class FuelEntryForm(forms.ModelForm):
                 widget=forms.TextInput(attrs=extra_attrs),
             )
 
+        finalize_company_form(self)
+
     def _parse_decimal(self, field_name: str, label: str, *, required: bool) -> Decimal | None:
         raw = self.cleaned_data.get(field_name, "")
         if raw is None or (isinstance(raw, str) and not raw.strip()):
@@ -175,15 +178,17 @@ class FuelEntryForm(forms.ModelForm):
             raise forms.ValidationError(str(e)) from e
 
     def clean_liters(self):
-        v = self._parse_decimal("liters", "os litros", required=True)
-        assert v is not None
-        if v <= 0:
-            raise forms.ValidationError("Litros devem ser positivos.")
+        v = self._parse_decimal("liters", "os litros", required=False)
+        if v is None:
+            return Decimal("0")
+        if v < 0:
+            raise forms.ValidationError("Litros inválidos.")
         return v
 
     def clean_price_per_liter(self):
-        v = self._parse_decimal("price_per_liter", "o preço por litro", required=True)
-        assert v is not None
+        v = self._parse_decimal("price_per_liter", "o preço por litro", required=False)
+        if v is None:
+            return Decimal("0")
         if v < 0:
             raise forms.ValidationError("Preço por litro inválido.")
         return v
@@ -200,8 +205,10 @@ class FuelEntryForm(forms.ModelForm):
         data = super().clean()
         liters = data.get("liters")
         price = data.get("price_per_liter")
-        if liters is None or price is None:
-            return data
+        if liters is None:
+            liters = Decimal("0")
+        if price is None:
+            price = Decimal("0")
         calc = (liters * price).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         data["total_amount"] = calc
         return data

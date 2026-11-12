@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 
+from apps.core.form_utils import finalize_company_form
 from apps.finance.forms import T_INPUT
 
 from .models import Customer, CustomerDeliveryPlace
@@ -22,6 +23,7 @@ class CustomerForm(forms.ModelForm):
     def __init__(self, *args, company, instance=None, **kwargs):
         self.company = company
         super().__init__(*args, instance=instance, **kwargs)
+        finalize_company_form(self)
 
     def save(self, commit=True):
         obj = super().save(commit=False)
@@ -44,10 +46,9 @@ class BaseCustomerDeliveryPlaceFormSet(forms.BaseInlineFormSet):
             if not cd or cd.get("DELETE"):
                 continue
             addr = (cd.get("address_line") or "").strip()
-            if not addr:
-                raise forms.ValidationError(
-                    "Cada local de entrega precisa de um endereço ou referência preenchidos."
-                )
+            label = (cd.get("label") or "").strip()
+            if not addr and not label:
+                continue
 
 
 def delivery_places_formset_factory(*, customer: Customer | None, data=None, prefix="places"):

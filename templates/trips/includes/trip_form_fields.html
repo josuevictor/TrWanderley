@@ -1,13 +1,7 @@
-<p class="text-xs text-red-600 dark:text-red-400">
-  <span class="font-semibold" aria-hidden="true">*</span> Campos obrigatórios
-</p>
-<p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-  Local de entrega: preencha <strong>cadastrado</strong> ou <strong>texto livre</strong> (pelo menos um).
-</p>
 {% for field in form %}
 <div class="min-w-0 max-w-full">
   <label class="block text-xs font-medium text-slate-600 dark:text-slate-400" for="{{ field.id_for_label }}">
-    {{ field.label }}{% if field.field.required or field.name == "delivery_place_ref" or field.name == "delivery_place" %}<span class="font-semibold text-red-600 dark:text-red-400" aria-hidden="true"> *</span>{% endif %}
+    {{ field.label }}
   </label>
   <div class="mt-0.5 min-w-0 max-w-full overflow-hidden [&_input]:max-w-full [&_select]:max-w-full">
     {{ field }}

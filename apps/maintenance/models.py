@@ -33,6 +33,8 @@ class MaintenanceRecord(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="maintenance_records",
         verbose_name="Caminhão",
+        null=True,
+        blank=True,
     )
     kind = models.CharField(
         "Tipo",
@@ -51,7 +53,7 @@ class MaintenanceRecord(TimeStampedModel):
         verbose_name="Oficina / fornecedor",
     )
     workshop_name = models.CharField("Oficina (texto)", max_length=255, blank=True)
-    service_date = models.DateField("Data")
+    service_date = models.DateField("Data", null=True, blank=True)
     odometer_km = models.DecimalField(
         "Quilometragem",
         max_digits=12,
@@ -71,7 +73,9 @@ class MaintenanceRecord(TimeStampedModel):
         decimal_places=2,
         default=0,
     )
-    total_amount = models.DecimalField("Valor total", max_digits=14, decimal_places=2)
+    total_amount = models.DecimalField(
+        "Valor total", max_digits=14, decimal_places=2, default=0
+    )
     next_service_date = models.DateField(
         "Próxima manutenção (data)",
         null=True,
@@ -105,7 +109,9 @@ class MaintenanceRecord(TimeStampedModel):
         ]
 
     def __str__(self) -> str:
-        return f"{self.get_kind_display()} — {self.truck.plate} ({self.service_date})"
+        plate = self.truck.plate if self.truck_id else "—"
+        when = self.service_date or "—"
+        return f"{self.get_kind_display()} — {plate} ({when})"
 
     def clean(self):
         super().clean()

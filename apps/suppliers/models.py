@@ -20,7 +20,7 @@ class Supplier(TimeStampedModel):
         related_name="suppliers",
         verbose_name="Empresa",
     )
-    name = models.CharField("Nome ou razão social", max_length=255)
+    name = models.CharField("Nome ou razão social", max_length=255, blank=True, default="")
     supplier_type = models.CharField(
         "Tipo",
         max_length=32,

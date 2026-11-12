@@ -24,7 +24,7 @@ class PaymentMethod(TimeStampedModel):
         related_name="payment_methods",
         verbose_name="Empresa",
     )
-    name = models.CharField("Nome", max_length=64)
+    name = models.CharField("Nome", max_length=64, blank=True, default="")
     is_active = models.BooleanField("Ativo", default=True)
 
     class Meta:
@@ -51,7 +51,7 @@ class FinancialCategory(TimeStampedModel):
         related_name="financial_categories",
         verbose_name="Empresa",
     )
-    name = models.CharField("Nome", max_length=128)
+    name = models.CharField("Nome", max_length=128, blank=True, default="")
     slug = models.SlugField(
         "Código",
         max_length=64,
@@ -63,6 +63,7 @@ class FinancialCategory(TimeStampedModel):
         "Tipo",
         max_length=16,
         choices=FinancialCategoryKind.choices,
+        default=FinancialCategoryKind.EXPENSE,
     )
     is_active = models.BooleanField("Ativa", default=True)
 
@@ -99,7 +100,7 @@ class FinancialAccount(TimeStampedModel):
         related_name="financial_accounts",
         verbose_name="Empresa",
     )
-    name = models.CharField("Nome", max_length=128)
+    name = models.CharField("Nome", max_length=128, blank=True, default="")
     kind = models.CharField(
         "Tipo",
         max_length=16,
@@ -147,16 +148,19 @@ class FinancialEntry(TimeStampedModel):
         "Tipo",
         max_length=16,
         choices=FinancialEntryType.choices,
+        default=FinancialEntryType.EXPENSE,
     )
-    description = models.CharField("Descrição", max_length=512)
+    description = models.CharField("Descrição", max_length=512, blank=True, default="")
     category = models.ForeignKey(
         FinancialCategory,
         on_delete=models.PROTECT,
         related_name="entries",
         verbose_name="Categoria",
+        null=True,
+        blank=True,
     )
-    amount = models.DecimalField("Valor", max_digits=14, decimal_places=2)
-    competence_date = models.DateField("Data de competência")
+    amount = models.DecimalField("Valor", max_digits=14, decimal_places=2, default=0)
+    competence_date = models.DateField("Data de competência", null=True, blank=True)
     due_date = models.DateField("Vencimento", null=True, blank=True)
     settlement_status = models.CharField(
         "Situação",
@@ -247,7 +251,11 @@ class FinancialEntry(TimeStampedModel):
             if self.entry_type == FinancialEntryType.INCOME
             else FinancialCategoryKind.EXPENSE
         )
-        if self.category_id and self.category.kind != expected_kind:
+        if (
+            self.category_id
+            and self.entry_type
+            and self.category.kind != expected_kind
+        ):
             raise ValidationError("O tipo do lançamento não corresponde à categoria.")
 
     def save(self, *args, **kwargs):
@@ -307,10 +315,12 @@ class CashMovement(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="movements",
         verbose_name="Conta",
+        null=True,
+        blank=True,
     )
     kind = models.CharField("Tipo", max_length=16, choices=CashMovementKind.choices)
-    amount = models.DecimalField("Valor", max_digits=14, decimal_places=2)
-    movement_date = models.DateField("Data do movimento")
+    amount = models.DecimalField("Valor", max_digits=14, decimal_places=2, default=0)
+    movement_date = models.DateField("Data do movimento", null=True, blank=True)
     payment_method = models.ForeignKey(
         PaymentMethod,
         on_delete=models.SET_NULL,
@@ -364,8 +374,8 @@ class CashMovement(TimeStampedModel):
             raise ValidationError("A conta deve pertencer à mesma empresa.")
         if self.payment_method_id and cid is not None and self.payment_method.company_id != cid:
             raise ValidationError("A forma de pagamento deve pertencer à mesma empresa.")
-        if self.amount is not None and self.amount <= 0:
-            raise ValidationError("O valor do movimento deve ser positivo.")
+        if self.amount is not None and self.amount < 0:
+            raise ValidationError("O valor do movimento não pode ser negativo.")
         if (
             self.auto_for_entry_id
             and cid is not None

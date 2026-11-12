@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django import forms
 
+from apps.core.form_utils import finalize_company_form
 from apps.core.money import format_br_decimal, parse_br_decimal
 from apps.finance.forms import T_INPUT, T_SELECT
 
@@ -96,9 +97,9 @@ class TruckForm(forms.ModelForm):
             ),
         )
 
+        finalize_company_form(self)
+
     def clean(self):
-        if self.company:
-            self.instance.company = self.company
         return super().clean()
 
     def clean_year(self):
