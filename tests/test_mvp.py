@@ -15,6 +15,7 @@ from apps.finance.models import (
     FinancialEntryType,
     FinancialSettlementStatus,
 )
+from apps.trucks.forms import TruckForm
 from apps.trucks.models import Truck, TruckStatus
 from apps.trips.models import Trip
 
@@ -69,3 +70,29 @@ class TripFinanceSyncTests(TestCase):
             CashMovement.objects.filter(company=self.company, kind=CashMovementKind.RECEIPT).count(),
             1,
         )
+
+
+class TruckFormTests(TestCase):
+    def setUp(self):
+        self.company = Company.objects.create(name="Frota Test")
+        self.user = User.objects.create_user(username="frota", password="x")
+
+    def test_truck_form_create_sets_company_before_validation(self):
+        form = TruckForm(
+            {
+                "plate": "JKL4F56",
+                "model": "FH",
+                "brand": "Volvo",
+                "year": "2019",
+                "tank_capacity_liters": "",
+                "current_odometer": "",
+                "acquisition_date": "",
+                "status": TruckStatus.ACTIVE,
+                "notes": "",
+            },
+            company=self.company,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        truck = form.save()
+        self.assertEqual(truck.company_id, self.company.pk)
+        self.assertEqual(Truck.objects.filter(company=self.company, plate="JKL4F56").count(), 1)

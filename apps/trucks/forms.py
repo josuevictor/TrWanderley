@@ -96,6 +96,11 @@ class TruckForm(forms.ModelForm):
             ),
         )
 
+    def clean(self):
+        if self.company:
+            self.instance.company = self.company
+        return super().clean()
+
     def clean_year(self):
         raw = self.cleaned_data.get("year", "")
         if raw is None or (isinstance(raw, str) and not str(raw).strip()):
